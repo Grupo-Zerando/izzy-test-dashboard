@@ -28,7 +28,7 @@ O n8n já libera CORS por padrão nesses webhooks, então não é preciso nenhum
 ## Deploy (GitHub Pages)
 
 1. Em **Settings → Pages** deste repositório, selecione a branch `main` e a pasta raiz (`/`) como fonte.
-2. Aguarde alguns minutos — o GitHub publica em `https://grupo-zerando.github.io/izzy-test-dashboard/`.
+2. Aguarde alguns minutos — o GitHub publica em `http://testes-izzy.zitway.com/`,`https://grupo-zerando.github.io/izzy-test-dashboard/`.
 3. Pronto — `index.html` é o painel de execução, `historico.html` é o histórico.
 
 ## Desenvolvimento local
