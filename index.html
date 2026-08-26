@@ -32,9 +32,16 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     line-height: 1.5;
   }
-  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
   h1 { font-size: 1.6rem; margin: 0 0 6px; letter-spacing: -0.01em; }
-  .lede { color: var(--text-muted); margin: 0 0 28px; font-size: 0.95rem; }
+  .lede { color: var(--text-muted); margin: 0; font-size: 0.95rem; }
+  .header-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+    padding: 40px 0 20px;
+  }
   .panel {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -160,16 +167,25 @@
     padding: 40px 0;
     font-size: 0.9rem;
   }
+  .confirmacao {
+    text-align: center;
+    padding: 24px 0;
+    font-weight: 600;
+    color: var(--ok);
+    font-size: 0.95rem;
+  }
   footer { margin-top: 40px; color: var(--text-faint); font-size: 0.8rem; text-align: center; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-    <h1>Painel de Testes — Izzy</h1>
-    <a href="historico.html" style="color:var(--accent-strong); font-size:0.88rem; font-weight:600; text-decoration:none;">Ver histórico →</a>
+  <div class="header-sticky">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+      <h1>Painel de Testes — Izzy</h1>
+      <a href="historico.html" style="color:var(--accent-strong); font-size:0.88rem; font-weight:600; text-decoration:none;">Ver histórico →</a>
+    </div>
+    <p class="lede">Escolha um cenário e acompanhe o que o agente respondeu, em tempo real.</p>
   </div>
-  <p class="lede">Escolha um cenário e acompanhe o que o agente respondeu, em tempo real.</p>
 
   <div class="panel">
     <div class="cenarios-head">
@@ -379,9 +395,7 @@ function render(rows) {
 }
 
 async function marcar(id, avaliacao, btnEl) {
-  var row = btnEl.closest('.flag-row');
-  row.querySelectorAll('.flag-btn').forEach(function (b) { b.classList.remove('active'); });
-  btnEl.classList.add('active');
+  var card = btnEl.closest('.card');
   try {
     await fetch('https://z-n8n.zitway.com/webhook/izzy-dashboard-marcar', {
       method: 'POST',
@@ -389,6 +403,9 @@ async function marcar(id, avaliacao, btnEl) {
       body: JSON.stringify({ id: id, avaliacao: avaliacao })
     });
   } catch (e) {
+  }
+  if (card) {
+    card.innerHTML = '<div class="confirmacao">✓ Guardamos sua resposta</div>';
   }
 }
 

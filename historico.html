@@ -32,8 +32,15 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     line-height: 1.5;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 20px 80px; }
-  .top-row { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px 80px; }
+  .header-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+    padding: 40px 0 20px;
+  }
+  .top-row { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
   h1 { font-size: 1.6rem; margin: 0 0 6px; letter-spacing: -0.01em; }
   .lede { color: var(--text-muted); margin: 0; font-size: 0.95rem; }
   a.nav-link { color: var(--accent-strong); font-size: 0.88rem; font-weight: 600; text-decoration: none; }
@@ -188,14 +195,16 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="top-row">
-    <div>
-      <h1>Histórico de Testes — Izzy</h1>
-      <p class="lede">Visão consolidada de todas as execuções registradas em resultados_teste_izzy.</p>
-    </div>
-    <div style="display:flex; gap:12px; align-items:center;">
-      <button onclick="carregar()">↻ Atualizar</button>
-      <a class="nav-link" href="index.html">← Painel de execução</a>
+  <div class="header-sticky">
+    <div class="top-row">
+      <div>
+        <h1>Histórico de Testes — Izzy</h1>
+        <p class="lede">Visão consolidada de todas as execuções registradas em resultados_teste_izzy.</p>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <button onclick="carregar()">↻ Atualizar</button>
+        <a class="nav-link" href="index.html">← Painel de execução</a>
+      </div>
     </div>
   </div>
 
