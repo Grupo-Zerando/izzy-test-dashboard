@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historico de Testes - Izzy</title>
+<style>
+  :root {
+    --bg: #f5f6f4;
+    --surface: #ffffff;
+    --surface-2: #eef0ec;
+    --border: #dcdfd8;
+    --text: #1c211d;
+    --text-muted: #5c6459;
+    --text-faint: #8b9285;
+    --accent: #35604f;
+    --accent-strong: #234439;
+    --accent-soft: #e1ebe4;
+    --danger: #a5402f;
+    --danger-strong: #7d2f22;
+    --danger-soft: #fbe9e6;
+    --ok: #2f7a52;
+    --ok-soft: #e7f3ec;
+    --warn: #9a6a13;
+    --warn-soft: #fbf1de;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 20px 80px; }
+  .top-row { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  h1 { font-size: 1.6rem; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lede { color: var(--text-muted); margin: 0; font-size: 0.95rem; }
+  a.nav-link { color: var(--accent-strong); font-size: 0.88rem; font-weight: 600; text-decoration: none; }
+  a.nav-link:hover { text-decoration: underline; }
+  button {
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.88rem;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+  button:hover { background: var(--surface-2); }
+
+  h2.section-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin: 32px 0 14px;
+  }
+  h2.section-title:first-of-type { margin-top: 0; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .kpi .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-faint); font-weight: 700; margin-bottom: 8px; }
+  .kpi .num { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--text); }
+  .kpi .sub { font-size: 0.78rem; color: var(--text-faint); margin-top: 4px; }
+  .kpi.acertos .num { color: var(--ok); }
+  .kpi.erros .num { color: var(--danger); }
+  .kpi.taxa .num { color: var(--warn); }
+
+  .barra-avaliacao {
+    display: flex;
+    height: 10px;
+    border-radius: 100px;
+    overflow: hidden;
+    background: var(--surface-2);
+    margin-top: 14px;
+  }
+  .barra-avaliacao .seg-ok { background: var(--ok); }
+  .barra-avaliacao .seg-erro { background: var(--danger); }
+  .barra-avaliacao .seg-vazio { background: var(--surface-2); }
+  .barra-legenda { display: flex; gap: 16px; margin-top: 10px; font-size: 0.78rem; color: var(--text-muted); }
+  .barra-legenda span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot.ok { background: var(--ok); }
+  .dot.erro { background: var(--danger); }
+  .dot.vazio { background: var(--text-faint); }
+
+  .top-erros-list { display: flex; flex-direction: column; gap: 10px; }
+  .top-erro-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+  .top-erro-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+  .top-erro-head .nome { font-weight: 600; font-size: 0.9rem; }
+  .top-erro-head .contagem { font-size: 0.82rem; color: var(--danger-strong); font-weight: 700; white-space: nowrap; }
+  .top-erro-bar-bg { height: 8px; border-radius: 100px; background: var(--surface-2); overflow: hidden; }
+  .top-erro-bar-fill { height: 100%; background: var(--danger); border-radius: 100px; }
+  .sem-erros {
+    text-align: center;
+    color: var(--ok);
+    background: var(--ok-soft);
+    border-radius: 10px;
+    padding: 24px;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .grupo-titulo {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+    font-weight: 700;
+    margin: 20px 0 10px;
+  }
+  .grupo-titulo:first-of-type { margin-top: 0; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+  }
+  .card.vazio { opacity: 0.55; }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .card-head .etapa { font-weight: 600; font-size: 0.92rem; color: var(--accent-strong); }
+  .card-head .meta { font-size: 0.76rem; color: var(--text-faint); white-space: nowrap; }
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    margin-left: 6px;
+  }
+  .badge.vazio { background: var(--warn-soft); color: var(--warn); }
+  .badge.ok { background: var(--ok-soft); color: var(--ok); }
+  .badge.erro { background: var(--danger-soft); color: var(--danger-strong); }
+  .row { margin-bottom: 5px; font-size: 0.9rem; }
+  .row:last-child { margin-bottom: 0; }
+  .label { font-weight: 600; color: var(--text-muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.02em; display: block; margin-bottom: 2px; }
+  .value { white-space: pre-wrap; }
+
+  .recentes-list { display: flex; flex-direction: column; gap: 6px; }
+  .recente-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.84rem;
+  }
+  .recente-item .status-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .recente-item .status-dot.ok { background: var(--ok); }
+  .recente-item .status-dot.erro { background: var(--danger); }
+  .recente-item .status-dot.vazio { background: var(--text-faint); }
+  .recente-item .nome { flex: 1; font-weight: 600; color: var(--text); }
+  .recente-item .quando { color: var(--text-faint); font-size: 0.78rem; white-space: nowrap; }
+  .exec-id {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.76rem;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .exec-id:hover { text-decoration: underline; }
+
+  .empty-state { text-align: center; color: var(--text-faint); padding: 40px 0; font-size: 0.9rem; }
+  footer { margin-top: 40px; color: var(--text-faint); font-size: 0.8rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-row">
+    <div>
+      <h1>Histórico de Testes — Izzy</h1>
+      <p class="lede">Visão consolidada de todas as execuções registradas em resultados_teste_izzy.</p>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <button onclick="carregar()">↻ Atualizar</button>
+      <a class="nav-link" href="index.html">← Painel de execução</a>
+    </div>
+  </div>
+
+  <div id="conteudo"><div class="empty-state">Carregando...</div></div>
+
+  <footer>Cenários sem nenhuma execução aparecem esmaecidos, com a marca "nunca executado". Use os botões Correto/Errado no painel de execução para alimentar as métricas de acerto.</footer>
+</div>
+
+<script>
+var GRUPOS = [
+  { titulo: 'Boas-vindas e tipo de serviço', itens: [
+    { id: 'T01_boas_vindas', label: 'Etapa 1 — Boas-vindas' },
+    { id: 'T02_pacote_completo', label: 'Etapa 2 — Pacote completo' },
+    { id: 'T03_sem_data_cenarioA', label: 'Etapa 2 — Cenário A (sem data)' },
+    { id: 'T04_cenarioB_com_mes', label: 'Etapa 2 — Cenário B (com mês citado)' }
+  ]},
+  { titulo: 'Coleta de dados', itens: [
+    { id: 'T05_nome_cliente', label: 'Etapa 3 — Nome do cliente' },
+    { id: 'T06_perfil_solo', label: 'Etapa 5 — Perfil solo' },
+    { id: 'T07_perfil_amigos', label: 'Etapa 5 — Perfil amigos' },
+    { id: 'T08_perfil_casal', label: 'Etapa 5 — Perfil casal' },
+    { id: 'T09_perfil_familia', label: 'Etapa 5 — Perfil família (sem crianças)' },
+    { id: 'T_perfil_familia_criancas', label: 'Etapa 6 — família com crianças' }
+  ]},
+  { titulo: 'Roteiro', itens: [
+    { id: 'T_roteiro_predefinido_dias', label: 'Etapa 8A — roteiro pré-definido' },
+    { id: 'T10_roteiro_personalizado', label: 'Etapa 8B — roteiro personalizado' },
+    { id: 'T_duracao_curta', label: 'Regra — duração menor que 3 dias' },
+    { id: 'T_duracao_longa', label: 'Regra — duração maior que 7 dias' }
+  ]},
+  { titulo: 'Regras gerais', itens: [
+    { id: 'T11_fora_contexto', label: 'Fora de contexto' },
+    { id: 'T_regra_mestra_nao_repetir', label: 'Regra-mestra — não repetir dado já coletado' },
+    { id: 'T_resposta_parcial', label: 'Regra-mestra — resposta parcial' }
+  ]},
+  { titulo: 'Consulta de passeios', itens: [
+    { id: 'T_pergunta_passeios', label: 'Pergunta sobre passeio específico (20 passeios)' }
+  ]}
+];
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function formatarData(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso);
+  return d.toLocaleString('pt-BR');
+}
+
+function renderKpis(resumo) {
+  var subAcertos = resumo.total_nao_avaliado > 0
+    ? ('inclui ' + resumo.total_nao_avaliado + ' ainda não avaliado(s) manualmente')
+    : 'todos avaliados manualmente';
+  return '<div class="kpi-grid">' +
+    '<div class="kpi"><div class="label">Total de execuções</div><div class="num">' + resumo.total_execucoes + '</div><div class="sub">' + resumo.cenarios_testados + ' cenário(s) distintos</div></div>' +
+    '<div class="kpi acertos"><div class="label">Acertos</div><div class="num">' + resumo.total_acerto + '</div><div class="sub">' + subAcertos + '</div></div>' +
+    '<div class="kpi erros"><div class="label">Erros</div><div class="num">' + resumo.total_erro + '</div><div class="sub">marcados como errados</div></div>' +
+    '<div class="kpi taxa"><div class="label">Taxa de erro</div><div class="num">' + resumo.taxa_erro + '%</div><div class="sub">sobre o total de execuções</div></div>' +
+    '</div>' +
+    '<div class="barra-avaliacao">' +
+      (resumo.total_acerto > 0 ? '<div class="seg-ok" style="width:' + (resumo.total_acerto / resumo.total_execucoes * 100) + '%"></div>' : '') +
+      (resumo.total_erro > 0 ? '<div class="seg-erro" style="width:' + (resumo.total_erro / resumo.total_execucoes * 100) + '%"></div>' : '') +
+    '</div>' +
+    '<div class="barra-legenda">' +
+      '<span><span class="dot ok"></span>Acerto (tudo que não foi marcado como erro)</span>' +
+      '<span><span class="dot erro"></span>Erro</span>' +
+    '</div>';
+}
+
+function renderTopErros(topErros) {
+  if (!topErros || topErros.length === 0) {
+    return '<div class="sem-erros">Nenhum erro marcado até agora ✓</div>';
+  }
+  var maxErros = Math.max.apply(null, topErros.map(function (t) { return t.erros; }));
+  return '<div class="top-erros-list">' + topErros.map(function (t) {
+    var pct = maxErros > 0 ? Math.round((t.erros / maxErros) * 100) : 0;
+    return '<div class="top-erro-row">' +
+      '<div class="top-erro-head"><span class="nome">' + escapeHtml(t.etapa_testada || t.test_id) + '</span>' +
+      '<span class="contagem">' + t.erros + ' erro(s) de ' + t.total_execucoes + ' (' + t.taxa + '%)</span></div>' +
+      '<div class="top-erro-bar-bg"><div class="top-erro-bar-fill" style="width:' + pct + '%"></div></div>' +
+      '</div>';
+  }).join('') + '</div>';
+}
+
+function renderRecentes(lista) {
+  if (!lista || lista.length === 0) {
+    return '<div class="empty-state">Nenhuma execução ainda.</div>';
+  }
+  return '<div class="recentes-list">' + lista.map(function (r) {
+    var cls = r.avaliacao === 'erro' ? 'erro' : 'ok';
+    var execLink = r.execution_id
+      ? '<a class="exec-id" href="https://z-n8n.zitway.com/workflow/jYDinzxWcRcVR1XQ/executions/' + encodeURIComponent(r.execution_id) + '" target="_blank" rel="noopener">' + escapeHtml(r.execution_id) + '</a>'
+      : '';
+    return '<div class="recente-item">' +
+      '<span class="status-dot ' + cls + '"></span>' +
+      '<span class="nome">' + escapeHtml(r.etapa_testada || r.test_id) + '</span>' +
+      execLink +
+      '<span class="quando">' + formatarData(r.executed_at) + '</span>' +
+      '</div>';
+  }).join('') + '</div>';
+}
+
+function renderPorCenario(porTeste) {
+  var mapa = {};
+  (porTeste || []).forEach(function (t) { mapa[t.test_id] = t; });
+
+  return GRUPOS.map(function (g) {
+    var itens = g.itens.map(function (c) {
+      var info = mapa[c.id];
+      if (!info) {
+        return '<div class="card vazio">' +
+          '<div class="card-head"><span class="etapa">' + escapeHtml(c.label) + '<span class="badge vazio">nunca executado</span></span></div>' +
+          '</div>';
+      }
+      return '<div class="card">' +
+        '<div class="card-head">' +
+        '<span class="etapa">' + escapeHtml(c.label) +
+        '<span class="badge">' + info.total_execucoes + ' execução(ões)</span>' +
+        (info.acertos > 0 ? '<span class="badge ok">' + info.acertos + ' certo(s)</span>' : '') +
+        (info.erros > 0 ? '<span class="badge erro">' + info.erros + ' erro(s)</span>' : '') +
+        '</span>' +
+        '<span class="meta">última em ' + formatarData(info.ultima_execucao) + '</span>' +
+        '</div>' +
+        '<div class="row"><span class="label">Cliente disse</span><span class="value">' + escapeHtml(info.ultima_mensagem) + '</span></div>' +
+        '<div class="row"><span class="label">Izzy respondeu</span><span class="value">' + escapeHtml(info.ultima_resposta) + '</span></div>' +
+        '</div>';
+    }).join('');
+    return '<div class="grupo-titulo">' + escapeHtml(g.titulo) + '</div>' + itens;
+  }).join('');
+}
+
+async function carregar() {
+  var el = document.getElementById('conteudo');
+  el.innerHTML = '<div class="empty-state">Carregando...</div>';
+  try {
+    var res = await fetch('https://z-n8n.zitway.com/webhook/izzy-dashboard-historico-data');
+    var payload = await res.json();
+
+    var resumo = payload.resumo || { total_execucoes: 0, total_acerto: 0, total_erro: 0, total_nao_avaliado: 0, taxa_erro: 0, taxa_acerto: 0, cenarios_testados: 0 };
+    var porTeste = payload.porTeste || [];
+    var topErros = payload.topErros || [];
+    var recentes = payload.ultimasExecucoes || [];
+
+    var html = '';
+    html += '<h2 class="section-title">Visão geral</h2>' + renderKpis(resumo);
+    html += '<h2 class="section-title">Top etapas por erro</h2>' + renderTopErros(topErros);
+    html += '<h2 class="section-title">Últimas execuções</h2>' + renderRecentes(recentes);
+    html += '<h2 class="section-title">Por cenário</h2>' + renderPorCenario(porTeste);
+
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = '<div class="empty-state">Erro ao carregar: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+carregar();
+</script>
+</body>
+</html>

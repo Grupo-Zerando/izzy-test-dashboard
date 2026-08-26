@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Testes - Izzy</title>
+<style>
+  :root {
+    --bg: #f5f6f4;
+    --surface: #ffffff;
+    --surface-2: #eef0ec;
+    --border: #dcdfd8;
+    --text: #1c211d;
+    --text-muted: #5c6459;
+    --text-faint: #8b9285;
+    --accent: #35604f;
+    --accent-strong: #234439;
+    --accent-soft: #e1ebe4;
+    --danger: #a5402f;
+    --danger-strong: #7d2f22;
+    --danger-soft: #fbe9e6;
+    --ok: #2f7a52;
+    --ok-soft: #e7f3ec;
+    --warn: #9a6a13;
+    --warn-soft: #fbf1de;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 1.6rem; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lede { color: var(--text-muted); margin: 0 0 28px; font-size: 0.95rem; }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .panel h2 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+  .cenarios-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cenarios-head h2 { margin: 0; }
+  .hint { font-size: 0.78rem; color: var(--text-faint); }
+  .grupo-titulo {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+    font-weight: 700;
+    margin: 14px 0 6px;
+  }
+  .grupo-titulo:first-child { margin-top: 0; }
+  .cenario-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.88rem;
+    padding: 5px 0;
+  }
+  .cenario-item input { margin-top: 3px; flex: none; width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+  .cenario-item label { cursor: pointer; }
+  .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 18px; }
+  button {
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  button:hover:not(:disabled) { background: var(--accent-strong); }
+  button:disabled { background: var(--text-faint); cursor: not-allowed; }
+  button.stop { background: var(--danger); }
+  button.stop:hover:not(:disabled) { background: var(--danger-strong); }
+  #status {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+  }
+  .spinner.active { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .progress-bar {
+    height: 6px;
+    background: var(--surface-2);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-top: 14px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.3s;
+  }
+  #resultados { display: flex; flex-direction: column; gap: 12px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .card .etapa {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--accent-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+  }
+  .card .row { margin-bottom: 6px; font-size: 0.92rem; }
+  .card .row:last-child { margin-bottom: 0; }
+  .card .label { font-weight: 600; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.02em; display: block; margin-bottom: 3px; }
+  .card .value { white-space: pre-wrap; }
+  .card .value.resp { color: var(--text); }
+  .flag-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .flag-btn {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .flag-btn.ok:hover { border-color: var(--ok); color: var(--ok); }
+  .flag-btn.err:hover { border-color: var(--danger); color: var(--danger); }
+  .flag-btn.ok.active { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+  .flag-btn.err.active { background: var(--danger-soft); border-color: var(--danger); color: var(--danger-strong); }
+  .empty {
+    text-align: center;
+    color: var(--text-faint);
+    padding: 40px 0;
+    font-size: 0.9rem;
+  }
+  footer { margin-top: 40px; color: var(--text-faint); font-size: 0.8rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+    <h1>Painel de Testes — Izzy</h1>
+    <a href="historico.html" style="color:var(--accent-strong); font-size:0.88rem; font-weight:600; text-decoration:none;">Ver histórico →</a>
+  </div>
+  <p class="lede">Escolha um cenário e acompanhe o que o agente respondeu, em tempo real.</p>
+
+  <div class="panel">
+    <div class="cenarios-head">
+      <h2>Cenário</h2>
+      <span class="hint">só um por vez</span>
+    </div>
+    <div id="cenariosGrid"></div>
+
+    <div class="controls">
+      <button id="btn" onclick="iniciar()">▶ Rodar cenário</button>
+      <button id="btnParar" class="stop" onclick="parar()" style="display:none;">■ Parar</button>
+      <span id="status"><span class="spinner" id="spinner"></span><span id="statusText">Pronto para rodar.</span></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div id="resultados"><div class="empty">Nenhum teste rodado ainda nesta sessão.</div></div>
+
+  <footer>Cada rodada cria uma conversa real no Chatwoot (contato de simulação) e faz chamadas reais à OpenAI.</footer>
+</div>
+
+<script>
+var GRUPOS = [
+  { titulo: 'Boas-vindas e tipo de serviço', itens: [
+    { id: 'T01_boas_vindas', label: 'Etapa 1 — Boas-vindas' },
+    { id: 'T02_pacote_completo', label: 'Etapa 2 — Pacote completo' },
+    { id: 'T03_sem_data_cenarioA', label: 'Etapa 2 — Cenário A (sem data)' },
+    { id: 'T04_cenarioB_com_mes', label: 'Etapa 2 — Cenário B (com mês citado)' }
+  ]},
+  { titulo: 'Coleta de dados', itens: [
+    { id: 'T05_nome_cliente', label: 'Etapa 3 — Nome do cliente' },
+    { id: 'T06_perfil_solo', label: 'Etapa 5 — Perfil solo' },
+    { id: 'T07_perfil_amigos', label: 'Etapa 5 — Perfil amigos' },
+    { id: 'T08_perfil_casal', label: 'Etapa 5 — Perfil casal' },
+    { id: 'T09_perfil_familia', label: 'Etapa 5 — Perfil família (sem crianças)' },
+    { id: 'T_perfil_familia_criancas', label: 'Etapa 6 — família com crianças' }
+  ]},
+  { titulo: 'Roteiro', itens: [
+    { id: 'T_roteiro_predefinido_dias', label: 'Etapa 8A — roteiro pré-definido' },
+    { id: 'T10_roteiro_personalizado', label: 'Etapa 8B — roteiro personalizado' },
+    { id: 'T_duracao_curta', label: 'Regra — duração menor que 3 dias' },
+    { id: 'T_duracao_longa', label: 'Regra — duração maior que 7 dias' }
+  ]},
+  { titulo: 'Regras gerais', itens: [
+    { id: 'T11_fora_contexto', label: 'Fora de contexto' },
+    { id: 'T_regra_mestra_nao_repetir', label: 'Regra-mestra — não repetir dado já coletado' },
+    { id: 'T_resposta_parcial', label: 'Regra-mestra — resposta parcial' }
+  ]},
+  { titulo: 'Consulta de passeios', itens: [
+    { id: 'T_pergunta_passeios', label: 'Pergunta sobre passeio específico (20 passeios)' }
+  ]}
+];
+var CASES = GRUPOS.reduce(function (acc, g) { return acc.concat(g.itens); }, []);
+
+var runId = null;
+var pollCount = 0;
+var pollTimer = null;
+var totalEsperado = 1;
+var parando = false;
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function montarCheckboxes() {
+  var grid = document.getElementById('cenariosGrid');
+  var html = GRUPOS.map(function (g) {
+    var itens = g.itens.map(function (c, i) {
+      var checked = (g === GRUPOS[0] && i === 0) ? ' checked' : '';
+      return '<div class="cenario-item">' +
+        '<input type="radio" name="cenario" id="chk_' + c.id + '" value="' + c.id + '"' + checked + '>' +
+        '<label for="chk_' + c.id + '">' + escapeHtml(c.label) + '</label>' +
+        '</div>';
+    }).join('');
+    return '<div class="grupo-titulo">' + escapeHtml(g.titulo) + '</div>' + itens;
+  }).join('');
+  grid.innerHTML = html;
+}
+
+function getSelecionados() {
+  var marcado = document.querySelector('input[name="cenario"]:checked');
+  return marcado ? [marcado.value] : [];
+}
+
+function setStatus(text, spinning) {
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('spinner').classList.toggle('active', !!spinning);
+}
+
+function setProgress(n) {
+  var pct = totalEsperado > 0 ? Math.min(100, Math.round((n / totalEsperado) * 100)) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function setRunningUI(running) {
+  document.getElementById('btn').disabled = running;
+  document.getElementById('btnParar').style.display = running ? 'inline-block' : 'none';
+}
+
+async function iniciar() {
+  var selecionados = getSelecionados();
+  if (selecionados.length === 0) {
+    setStatus('Selecione um cenário.', false);
+    return;
+  }
+  totalEsperado = selecionados.length;
+  parando = false;
+  setRunningUI(true);
+  setStatus('Iniciando...', true);
+  setProgress(0);
+  document.getElementById('resultados').innerHTML = '<div class="empty">Aguardando as primeiras respostas...</div>';
+
+  try {
+    var res = await fetch('https://z-n8n.zitway.com/webhook/izzy-dashboard-run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ selectedTests: selecionados })
+    });
+    var data = await res.json();
+    runId = data.runId;
+    pollCount = 0;
+    setStatus('Rodando — leva ~15-30s...', true);
+    poll();
+  } catch (e) {
+    setStatus('Erro ao iniciar: ' + e.message, false);
+    setRunningUI(false);
+  }
+}
+
+async function parar() {
+  if (!runId) return;
+  parando = true;
+  setStatus('Parando (o cenário em andamento ainda termina)...', true);
+  try {
+    await fetch('https://z-n8n.zitway.com/webhook/izzy-dashboard-stop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ runId: runId })
+    });
+  } catch (e) {
+  }
+}
+
+async function poll() {
+  pollCount++;
+  try {
+    var res = await fetch('https://z-n8n.zitway.com/webhook/izzy-dashboard-status?run_id=' + encodeURIComponent(runId));
+    var raw = await res.json();
+    var rows = Array.isArray(raw) ? raw : [];
+    render(rows);
+
+    var realTests = new Set(
+      (rows || [])
+        .filter(function (r) { return r.test_id && r.test_id.indexOf('_aquecimento') === -1; })
+        .map(function (r) { return r.test_id; })
+    );
+    setProgress(realTests.size);
+
+    if (realTests.size >= totalEsperado) {
+      setStatus('Concluído — ' + realTests.size + '/' + totalEsperado + ' cenário(s)', false);
+      setRunningUI(false);
+      return;
+    }
+    if (parando) {
+      setStatus('Parado — ' + realTests.size + '/' + totalEsperado + ' cenário(s) concluído(s) antes de parar', false);
+      setRunningUI(false);
+      return;
+    }
+    if (pollCount >= 90) {
+      setStatus('Parou de atualizar (tempo esgotado) — ' + realTests.size + '/' + totalEsperado + ' cenário(s)', false);
+      setRunningUI(false);
+      return;
+    }
+    pollTimer = setTimeout(poll, 5000);
+  } catch (e) {
+    setStatus('Erro ao consultar status: ' + e.message, false);
+    setRunningUI(false);
+  }
+}
+
+function render(rows) {
+  var seen = {};
+  (rows || []).forEach(function (r) {
+    if (r.test_id && r.test_id.indexOf('_aquecimento') === -1) seen[r.test_id] = r;
+  });
+  var items = Object.keys(seen).map(function (k) { return seen[k]; });
+  var el = document.getElementById('resultados');
+  if (items.length === 0) {
+    el.innerHTML = '<div class="empty">Aguardando as primeiras respostas...</div>';
+    return;
+  }
+  var html = items.map(function (r) {
+    var av = r.avaliacao || '';
+    return '<div class="card">' +
+      '<div class="etapa">' + escapeHtml(r.etapa_testada || r.test_id) + '</div>' +
+      '<div class="row"><span class="label">Cliente disse</span><span class="value">' + escapeHtml(r.mensagem_enviada) + '</span></div>' +
+      '<div class="row"><span class="label">Izzy respondeu</span><span class="value resp">' + escapeHtml(r.resposta_agente) + '</span></div>' +
+      '<div class="flag-row">' +
+      '<button class="flag-btn ok' + (av === 'correto' ? ' active' : '') + '" onclick="marcar(' + r.id + ', &quot;correto&quot;, this)">✓ Correto</button>' +
+      '<button class="flag-btn err' + (av === 'erro' ? ' active' : '') + '" onclick="marcar(' + r.id + ', &quot;erro&quot;, this)">✗ Errado</button>' +
+      '</div>' +
+      '</div>';
+  }).join('');
+  el.innerHTML = html;
+}
+
+async function marcar(id, avaliacao, btnEl) {
+  var row = btnEl.closest('.flag-row');
+  row.querySelectorAll('.flag-btn').forEach(function (b) { b.classList.remove('active'); });
+  btnEl.classList.add('active');
+  try {
+    await fetch('https://z-n8n.zitway.com/webhook/izzy-dashboard-marcar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id, avaliacao: avaliacao })
+    });
+  } catch (e) {
+  }
+}
+
+montarCheckboxes();
+</script>
+</body>
+</html>
